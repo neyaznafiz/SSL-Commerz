@@ -45,11 +45,7 @@ const Checkout = () => {
     })
       .then((res) => res.json())
       .then((data) => {
-        console.log(data);
-        if (data.acknowledged) {
-          alert("Order placed successfully");
-          form.reset();
-        }
+       window.location.replace(data.url)
       })
       .catch((er) => console.error(er));
   };
@@ -66,7 +62,7 @@ const Checkout = () => {
           <img src={img} alt="" className="h-80" />
         </div>
 
-        <div className="w-7/12">
+        <div className="w-7/12 mt-16">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <input
               name="firstName"
@@ -116,7 +112,6 @@ const Checkout = () => {
               type="text"
               placeholder="Your Postcode"
               className="input input-ghost w-full  input-bordered mt-3"
-              readOnly
             />
           </div>
 
@@ -127,7 +122,7 @@ const Checkout = () => {
             required
           ></textarea>
 
-          <input className="btn" type="submit" value="Place Your Order" />
+          <input className="btn w-full" type="submit" value="Pay" />
         </div>
       </form>
     </div>
