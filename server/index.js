@@ -2,10 +2,16 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
+const SSLCommerzPayment = require('sslcommerz-lts')
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 const app = express();
 const port = process.env.PORT || 5000;
+
+// ssl commerz
+const store_id = process.env.STORE_ID
+const store_passwd = process.env.STORE_PASSWORD
+const is_live = false //true for live, false for sandbox
 
 // middle wares
 app.use(cors());
@@ -39,8 +45,8 @@ function verifyJWT(req, res, next) {
 
 async function run() {
   try {
-    const serviceCollection = client.db('theCarDoctor').collection('service')
-    const orderCollection = client.db('theCarDoctor').collection('order')
+    const serviceCollection = client.db("geniusCar").collection("services");
+    const orderCollection = client.db("geniusCar").collection("orders");
 
     app.post("/jwt", (req, res) => {
       const user = req.body;
