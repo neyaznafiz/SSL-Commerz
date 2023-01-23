@@ -11,7 +11,7 @@ const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.twtll.mongodb.net/?retryWrites=true&w=majority`;
+const uri = `mongodb+srv://${process.env.TCD_USER}:${process.env.TCD_PASS}@cluster0.l30j2.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
 // const uri = "mongodb://localhost:27017";
 
 const client = new MongoClient(uri, {
@@ -39,8 +39,8 @@ function verifyJWT(req, res, next) {
 
 async function run() {
   try {
-    const serviceCollection = client.db("geniusCar").collection("services");
-    const orderCollection = client.db("geniusCar").collection("orders");
+    const serviceCollection = client.db('theCarDoctor').collection('service')
+    const orderCollection = client.db('theCarDoctor').collection('order')
 
     app.post("/jwt", (req, res) => {
       const user = req.body;
