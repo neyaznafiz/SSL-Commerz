@@ -4,6 +4,7 @@ const cors = require("cors");
 const jwt = require("jsonwebtoken");
 const SSLCommerzPayment = require("sslcommerz-lts");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+const { restart } = require("nodemon");
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -112,13 +113,18 @@ async function run() {
         _id: ObjectId(order.service),
       });
 
+      const transactionId =
+        new ObjectId().toString() +
+        orderedService._id.toString() +
+        orderedService.service_id;
+
       const data = {
         total_amount: orderedService.price,
         currency: order.currency,
-        tran_id: new ObjectId().toString(),
-        success_url: "http://localhost:3030/success",
-        fail_url: "http://localhost:3030/fail",
-        cancel_url: "http://localhost:3030/cancel",
+        tran_id: transactionId,
+        success_url: `http://localhost:5000/payment/success?transactionId=${transactionId}`,
+        fail_url: "http://localhost:5000/payment/fail",
+        cancel_url: "http://localhost:5000/payment//cancel",
         ipn_url: "http://localhost:3030/ipn",
         shipping_method: "Courier",
         product_name: orderedService.title,
@@ -147,9 +153,30 @@ async function run() {
       sslcz.init(data).then((apiResponse) => {
         // Redirect the user to payment gateway
         let GatewayPageURL = apiResponse.GatewayPageURL;
-        
+        orderCollection.insertOne({
+          ...order,
+          price: orderedService.price,
+          transactionId,
+          paid: false,
+        });
         res.send({ url: GatewayPageURL });
       });
+    });
+
+    // payment suuccess ssl route
+    app.post("/payment/success", async (req, res) => {
+      const { transactionId } = req.query;
+
+      const result = await orderCollection.updateOne(
+        { transactionId },
+        { $set: { paid: true, paidAt: new Date() } }
+      );
+      
+      if (result.modifiedCount > 0) {
+        res.redirect(
+          `http://localhost:3000/payment/success?transactionId=${transactionId}`
+        );
+      }
     });
 
     app.patch("/orders/:id", verifyJWT, async (req, res) => {
