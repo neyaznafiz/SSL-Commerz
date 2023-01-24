@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 const PaymentSuccess = () => {
   const location = useLocation();
@@ -14,6 +14,14 @@ const PaymentSuccess = () => {
       .then((data) => setOrder(data));
   }, [transactionId]);
 
+  if (!order?._id) {
+    return (
+      <div className="mt-20 mb-80 text-center">
+        <p className="text-3xl text-red-700"> No order found..!!</p>
+      </div>
+    );
+  }
+
   return (
     <div className="mt-24 p-3">
       <div className="flex justify-between">
@@ -21,10 +29,20 @@ const PaymentSuccess = () => {
           Congrats! Payment Successful For Your Order.
         </h2>
 
-        {/* print button */}
-        <button className="btn btn-warning print:hidden" onClick={() => window.print()}>
-          Print
-        </button>
+        <div className="flex gap-x-5">
+          {/* print button */}
+          <button
+            className="btn btn-warning print:hidden"
+            onClick={() => window.print()}
+          >
+            Print
+          </button>
+
+          {/* go to home butto */}
+          <button className="btn btn-success print:hidden">
+            <Link to="/">Go To Home</Link>
+          </button>
+        </div>
       </div>
 
       <h2 className="text-xl font-medium mt-3">Your Order Summary</h2>
