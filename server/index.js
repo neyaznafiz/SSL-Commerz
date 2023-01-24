@@ -171,12 +171,20 @@ async function run() {
         { transactionId },
         { $set: { paid: true, paidAt: new Date() } }
       );
-      
+
       if (result.modifiedCount > 0) {
         res.redirect(
           `http://localhost:3000/payment/success?transactionId=${transactionId}`
         );
       }
+    });
+
+    // for get paid order info by transactionId in successfull payment route in client side
+    app.get("/order/by-transaction-id/:id", async (req, res) => {
+      const { id } = req.params;
+      const order = await orderCollection.findOne({ transactionId: id });
+
+      res.send(order);
     });
 
     app.patch("/orders/:id", verifyJWT, async (req, res) => {
