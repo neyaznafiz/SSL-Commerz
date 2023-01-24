@@ -109,6 +109,11 @@ async function run() {
 
     app.post("/orders", verifyJWT, async (req, res) => {
       const order = req.body;
+
+      if (!order?.service || !order?.email || !order. addresss) {
+        return res.send({error: "Please, provide all of the information..!!"})
+      }
+
       const orderedService = await serviceCollection.findOne({
         _id: ObjectId(order.service),
       });
@@ -122,10 +127,10 @@ async function run() {
         total_amount: orderedService.price,
         currency: order.currency,
         tran_id: transactionId,
-        success_url: `http://localhost:5000/payment/success?transactionId=${transactionId}`,
-        fail_url: `http://localhost:5000/payment/fail?transactionId=${transactionId}`,
-        cancel_url: "http://localhost:5000/payment/cancel",
-        ipn_url: "http://localhost:3030/ipn",
+        success_url: `${process.env.SERVER_URL}/payment/success?transactionId=${transactionId}`,
+        fail_url: `${process.env.SERVER_URL}/payment/fail?transactionId=${transactionId}`,
+        cancel_url: `${process.env.SERVER_URL}/payment/cancel`,
+        ipn_url: `${process.env.CLIENT_URL}/ipn`,
         shipping_method: "Courier",
         product_name: orderedService.title,
         product_category: "Electronic",
@@ -167,6 +172,10 @@ async function run() {
     app.post("/payment/success", async (req, res) => {
       const { transactionId } = req.query;
 
+      if (!transactionId) { 
+        return res.redirect(`${process.env.CLIENT_URL}/payment/fail`)
+      }
+
       const result = await orderCollection.updateOne(
         { transactionId },
         { $set: { paid: true, paidAt: new Date() } }
@@ -174,7 +183,7 @@ async function run() {
 
       if (result.modifiedCount > 0) {
         res.redirect(
-          `http://localhost:3000/payment/success?transactionId=${transactionId}`
+          `${process.env.CLIENT_URL}/payment/success?transactionId=${transactionId}`
         );
       }
     });
@@ -190,10 +199,15 @@ async function run() {
     // payment fail route ssl route
     app.post("/payment/fail", async (req, res) => {
       const { transactionId } = req.query;
+
+      if (!transactionId) { 
+        return res.redirect(`${process.env.CLIENT_URL}/payment/fail`)
+      }
+
       const result = await orderCollection.deleteOne({ transactionId });
 
       if (result.deletedCount) {
-        res.redirect("http://localhost:3000/payment/fail");
+        res.redirect(`${process.env.CLIENT_URL}/payment/fail`);
       }
     });
 
